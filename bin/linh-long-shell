@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+# ══════════════════════════════════════════════════════════════════════════════
+#  LINH-LONG SHELL RUNNER & CLI CONTROLLER
+# ══════════════════════════════════════════════════════════════════════════════
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/linh-long-shell"
+
+show_help() {
+    cat << EOF
+Linh-Long Desktop Shell Controller
+
+Usage:
+  linh-long-shell <command> [arguments]
+
+Lifecycle Commands:
+  start          Start Linh-Long Desktop Shell
+  stop           Stop running Linh-Long Shell instance
+  restart        Restart Linh-Long Desktop Shell
+  test           Run Linh-Long Shell in test window / dry-run mode
+  status         Check if Linh-Long Shell is currently active
+  init-config    Copy default config.toml to ~/.config/linh-long-shell/
+  help           Display this help screen
+
+Quick IPC Shortcuts:
+  launcher       Toggle Spotlight App Launcher
+  control-center Toggle Quick Settings & Audio Mixer
+  clipboard      Toggle Clipboard History Manager
+  switcher       Toggle Alt-Tab Window Switcher
+  media          Toggle Floating Music Player
+  overview       Toggle Workspaces & Window Overview
+  wallpaper      Toggle Wallpaper & Theme Studio
+  calendar       Toggle Interactive Calendar Popup
+  settings       Toggle Linh-Long Settings Dialog
+  session        Toggle Power & Session Screen
+  cheatsheet     Toggle Keybindings Cheatsheet
+  ai             Toggle AI Copilot Assistant Sidebar
+  screenshot     Snip Region Screenshot to Clipboard
+  lock           Lock Screen with Native Session Lock
+
+Media & Volume:
+  vol-up         Increase Master Volume
+  vol-down       Decrease Master Volume
+  vol-mute       Toggle Audio Mute
+  media-play     Toggle Media Play/Pause
+  media-next     Skip to Next Media Track
+  media-prev     Skip to Previous Media Track
+
+Script Integrations:
+  dmenu          Drop-in dmenu / rofi filter replacement from stdin
+  msg <action>   Send raw IPC message to running shell
+EOF
+}
+
+find_quickshell() {
+    if [[ -n "${QUICKSHELL_BIN:-}" && -x "$QUICKSHELL_BIN" ]]; then
+        echo "$QUICKSHELL_BIN"
+        return 0
+    fi
+    if command -v quickshell &>/dev/null; then
+        command -v quickshell
+        return 0
+    fi
+    local store_qs
+    store_qs="$(find /nix/store -maxdepth 3 -name "quickshell" -type f -perm -111 2>/dev/null | head -n 1 || true)"
+    if [[ -n "$store_qs" && -x "$store_qs" ]]; then
+        echo "$store_qs"
+        return 0
+    fi
+    echo "quickshell"
+}
+
+QS_CMD="$(find_quickshell)"
+
+init_config() {
+    mkdir -p "$CONFIG_DIR"
+    if [[ ! -f "$CONFIG_DIR/config.toml" ]]; then
+        cp "$SCRIPT_DIR/config.toml" "$CONFIG_DIR/config.toml"
+        echo "[LinhLong] Initialized configuration at $CONFIG_DIR/config.toml"
+    else
+        echo "[LinhLong] Configuration already exists at $CONFIG_DIR/config.toml"
+    fi
+}
+
+start_shell() {
+    echo "[LinhLong] Launching Linh-Long Desktop Shell from $SCRIPT_DIR..."
+    init_config
+    exec "$QS_CMD" -p "$SCRIPT_DIR" "$@"
+}
+
+stop_shell() {
+    echo "[LinhLong] Stopping Linh-Long Desktop Shell instances..."
+    pkill -f "quickshell.*$SCRIPT_DIR" || true
+    echo "[LinhLong] Stopped."
+}
+
+test_shell() {
+    echo "[LinhLong] Running Linh-Long Desktop Shell in test mode..."
+    "$QS_CMD" -p "$SCRIPT_DIR"
+}
+
+send_msg() {
+    local action="${1:-}"
+    if [[ -z "$action" ]]; then
+        echo "Error: missing IPC action. See 'linh-long-shell help'." >&2
+        exit 1
+    fi
+    "$QS_CMD" ipc -p "$SCRIPT_DIR" call linh-long "$action"
+}
+
+check_status() {
+    if pgrep -f "quickshell.*$SCRIPT_DIR" > /dev/null; then
+        echo "[LinhLong] Status: Active (Running - PID: $(pgrep -f "quickshell.*$SCRIPT_DIR" | tr '\n' ' '))"
+    else
+        echo "[LinhLong] Status: Inactive (Not Running)"
+    fi
+}
+
+dmenu_mode() {
+    # If fuzzel / rofi is installed, fallback cleanly, or output piped stdin
+    if command -v fuzzel &>/dev/null; then
+        fuzzel --dmenu "$@"
+    elif command -v rofi &>/dev/null; then
+        rofi -dmenu "$@"
+    else
+        cat
+    fi
+}
+
+case "${1:-start}" in
+    start)
+        shift || true
+        start_shell "$@"
+        ;;
+    stop)
+        stop_shell
+        ;;
+    restart)
+        stop_shell
+        sleep 0.5
+        start_shell
+        ;;
+    test|dry-run)
+        test_shell
+        ;;
+    status)
+        check_status
+        ;;
+    init-config)
+        init_config
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    # Shortcuts
+    launcher) send_msg "toggleLauncher" ;;
+    control-center|cc) send_msg "toggleControlCenter" ;;
+    clipboard|clip) send_msg "toggleClipboard" ;;
+    switcher) send_msg "toggleSwitcher" ;;
+    media) send_msg "toggleMedia" ;;
+    overview) send_msg "toggleOverview" ;;
+    wallpaper) send_msg "toggleWallpaper" ;;
+    calendar) send_msg "toggleCalendar" ;;
+    settings) send_msg "toggleSettings" ;;
+    session|power) send_msg "toggleSession" ;;
+    cheatsheet) send_msg "toggleCheatsheet" ;;
+    ai|copilot) send_msg "toggleAi" ;;
+    screenshot|snip) send_msg "captureRegion" ;;
+    lock) send_msg "lockScreen" ;;
+    # Audio & Media
+    vol-up) send_msg "volumeUp" ;;
+    vol-down) send_msg "volumeDown" ;;
+    vol-mute) send_msg "volumeMute" ;;
+    media-play|media-toggle) send_msg "mediaToggle" ;;
+    media-next) send_msg "mediaNext" ;;
+    media-prev) send_msg "mediaPrev" ;;
+    # dmenu compatibility
+    dmenu)
+        shift || true
+        dmenu_mode "$@"
+        ;;
+    msg)
+        shift
+        send_msg "$@"
+        ;;
+    *)
+        echo "Unknown command: $1. Run 'linh-long-shell help' for usage." >&2
+        exit 1
+        ;;
+esac

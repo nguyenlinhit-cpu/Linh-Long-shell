@@ -1,0 +1,153 @@
+# ══════════════════════════════════════════════════════════════════════════════
+#  LINH-LONG DESKTOP SHELL - CONFIGURATION
+#  Unified Wayland Desktop Shell (Quickshell Engine + Noctalia Architecture + M3 Aesthetics)
+# ══════════════════════════════════════════════════════════════════════════════
+
+[shell]
+# Compositor backend: "auto" | "hyprland" | "niri" | "sway" | "generic"
+compositor = "auto"
+# Global UI scale factor (1.0 = default)
+ui_scale = 1.0
+# Corner radius scaling (0.0 = square, 1.0 = standard M3 rounded, 1.4 = extra squircle)
+corner_radius = 1.0
+# Base typography font
+font_family = "Inter, Roboto, sans-serif"
+font_mono = "JetBrainsMono Nerd Font, monospace"
+# Time and Date formatting
+time_format = "hh:mm"
+date_format = "ddd, MMM d"
+
+[theme]
+# Mode: "dark" | "light" | "auto"
+mode = "dark"
+# Color source: "wallpaper" (dynamic Material You) | "catppuccin" | "tokyo-night" | "dracula" | "nord" | "oled"
+source = "wallpaper"
+# Pure OLED dark mode: true forces #000000 background
+pure_black_oled = false
+# Glassmorphism settings
+blur_enabled = true
+blur_strength = 24
+background_opacity = 0.78
+surface_opacity = 0.88
+card_opacity = 0.94
+# Border outline width in pixels
+border_width = 1
+
+[bar]
+enabled = true
+# Layout mode: "floating" (Dynamic Island pill) | "attached" (Full edge width)
+style = "floating"
+# Screen edge: "top" | "bottom"
+edge = "top"
+# Height in px
+height = 44
+# Floating margin from screen edge
+margin_y = 8
+margin_x = 16
+# Widgets visibility toggles
+show_workspaces = true
+show_window_title = false
+show_media_pill = true
+show_clock = true
+show_hardware_mini = true
+show_network = true
+show_battery = true
+show_tray = true
+show_control_center_btn = true
+
+[dock]
+enabled = true
+# Auto hide when a window occupies screen space
+autohide = true
+# Screen edge: "bottom" | "left" | "right"
+edge = "bottom"
+height = 56
+icon_size = 38
+# Magnification zoom on hover
+magnification = 1.25
+# Pinned desktop applications
+pinned_apps = [
+    "firefox",
+    "com.mitchellh.ghostty",
+    "antigravity-ide",
+    "nvim",
+    "yazi"
+]
+
+[control_center]
+# Attached to bar trigger or floating center
+position = "top_right"
+width = 380
+show_quick_toggles = true
+show_volume_slider = true
+show_brightness_slider = true
+# PipeWire per-application audio stream mixer
+show_app_stream_mixer = true
+show_media_widget = true
+show_hardware_graphs = true
+
+[launcher]
+# Hotkey: Super + Space / Super + D
+width = 620
+max_results = 8
+# Provider prefixes
+prefix_calc = "/calc"
+prefix_win = "/win"
+prefix_clip = "/clip"
+prefix_ai = "/ai"
+prefix_session = "/session"
+# Show frequency sorted apps
+sort_by_usage = true
+show_category_tabs = true
+
+[notifications]
+enabled = true
+position = "top_right"
+offset_x = 16
+offset_y = 56
+max_visible_toasts = 4
+timeout_ms = 5000
+sound_enabled = true
+dnd_enabled = false
+
+[osd]
+enabled = true
+position = "bottom_center"
+offset_y = 80
+timeout_ms = 1800
+show_percentage = true
+
+[lockscreen]
+enabled = true
+# Use blurred desktop screencopy as lock background
+blur_desktop = true
+blur_radius = 48
+pam_service = "hyprlock"
+show_media_player = true
+show_clock = true
+show_battery = true
+
+[wallpaper]
+enabled = true
+directory = "~/Pictures/Wallpapers"
+# Transition types: "fade" | "zoom" | "wipe"
+transition = "fade"
+transition_duration_ms = 800
+# Automation slideshow
+slideshow_enabled = false
+interval_seconds = 1800
+
+[ai]
+enabled = true
+# Provider: "ollama" | "gemini" | "custom"
+provider = "ollama"
+# Ollama local endpoint
+endpoint = "http://localhost:11434"
+model = "llama3"
+stream_responses = true
+
+[hardware]
+# Hardware poll interval in milliseconds (/proc/stat & /proc/meminfo)
+poll_interval_ms = 2000
+cpu_warning_threshold = 85.0
+ram_warning_threshold = 90.0

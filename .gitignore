@@ -1,0 +1,11 @@
+# Nix build artifacts
+result
+result-*
+.direnv/
+
+# Editor & OS temporary files
+*.swp
+*~
+.DS_Store
+.idea/
+.vscode/
