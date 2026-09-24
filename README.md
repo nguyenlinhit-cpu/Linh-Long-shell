@@ -2,6 +2,8 @@
 
 > **The Ultimate Wayland Desktop Shell**: Built by combining the breathtaking Material 3 aesthetics of **`dots-hyprland`**, the unified zero-fork monolithic architecture of **`noctalia`**, and the hardware-accelerated fluid SceneGraph engine of **`quickshell`**.
 
+> 📖 **Installation Guides**: [**Arch Linux (Hyprland & Niri)**](INSTALL_ARCH.md) | [**NixOS (Hyprland & Niri)**](INSTALL_NIXOS.md)
+
 ---
 
 ## 🌟 The 3-Way Synthesis: Best of All 3, None of the Weaknesses
